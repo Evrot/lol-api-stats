@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../index');
-const Player = require('./Player');
-const Match = require('./Match');
 
 // Define the PlayerMatchStats model
 const PlayerMatchStats = sequelize.define('PlayerMatchStats', {
@@ -19,10 +17,6 @@ const PlayerMatchStats = sequelize.define('PlayerMatchStats', {
   killParticipation: DataTypes.FLOAT,
   csPerMinute: DataTypes.FLOAT,
 });
-
-// Define relationships
-Player.belongsToMany(Match, { through: PlayerMatchStats, foreignKey: 'playerId' });
-Match.belongsToMany(Player, { through: PlayerMatchStats, foreignKey: 'matchId' });
 
 // Export the PlayerMatchStats model
 module.exports = PlayerMatchStats;

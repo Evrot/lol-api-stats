@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
+
+// Models
 const Match = require('../database/models/Match');
+const PlayerMatchStats = require('../database/models/PlayerMatchStats');
+const Player = require('../database/models/Player');
 
 // GET all matches
 router.get('/', async (req, res) => {
@@ -29,7 +33,7 @@ router.post('/', async (req, res) => {
     const newMatch = await Match.create(req.body);
     res.status(201).json(newMatch);
   } catch (err) {
-    res.status(400).json({ error: 'Failed to create match', details: err });
+    res.status(400).json({ error: 'Failed to create match', details: err.message });
   }
 });
 
@@ -42,7 +46,7 @@ router.put('/:id', async (req, res) => {
     await match.update(req.body);
     res.json(match);
   } catch (err) {
-    res.status(400).json({ error: 'Failed to update match', details: err });
+    res.status(400).json({ error: 'Failed to update match', details: err.message });
   }
 });
 
@@ -59,5 +63,31 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router;
+// GET stats for a match
+router.get('/:id/stats', async (req, res) => {
+  try {
+    const matchId = req.params.id;
 
+    const stats = await PlayerMatchStats.findAll({
+      where: { matchId: req.params.id },
+      include: [
+        {
+          model: Player,
+          attributes: ['playerId', 'summonerName', 'teamName', 'role', 'region']
+        }
+      ]
+    });
+
+    if (!stats || stats.length === 0) {
+      return res.status(404).json({ error: 'No stats found for this match' });
+    }
+
+    res.json(stats);
+  } catch (err) {
+    console.error(err); // VERY helpful for debugging
+    res.status(500).json({ error: 'Failed to fetch stats', details: err.message });
+  }
+});
+
+
+module.exports = router;
